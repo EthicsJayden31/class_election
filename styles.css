@@ -1,6 +1,6 @@
 :root {
   --bg: linear-gradient(150deg, #f4fbff 0%, #f8f0ff 50%, #fefcf2 100%);
-  --panel: rgba(255, 255, 255, 0.82);
+  --panel: rgba(255, 255, 255, 0.84);
   --text: #243145;
   --primary: #3f73ff;
   --primary-strong: #2f5ee0;
@@ -72,15 +72,15 @@ header p {
   gap: 1rem;
 }
 
-label {
+label,
+.candidate-count-row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   font-weight: 600;
 }
 
-input,
-textarea {
+input {
   border: 2px solid #d9e5ff;
   border-radius: 14px;
   padding: 0.9rem;
@@ -88,9 +88,38 @@ textarea {
   outline: none;
 }
 
-input:focus,
-textarea:focus {
+input:focus {
   border-color: var(--primary);
+}
+
+.count-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+#candidate-count {
+  width: 110px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.candidate-fields {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.candidate-field {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.candidate-field span {
+  font-weight: 700;
+  color: #4f5f80;
 }
 
 .btn {
@@ -101,6 +130,11 @@ textarea:focus {
   font-weight: 700;
   background: #e7ecff;
   color: #2e3e5a;
+}
+
+.btn-small {
+  padding: 0.6rem 0.9rem;
+  min-width: 44px;
 }
 
 .btn:active {
@@ -149,9 +183,29 @@ textarea:focus {
   transition: all 0.2s ease;
 }
 
+.candidate-card.pastel-1 {
+  background: #ffe6ee;
+}
+.candidate-card.pastel-2 {
+  background: #e7f7ff;
+}
+.candidate-card.pastel-3 {
+  background: #eaf8e7;
+}
+.candidate-card.pastel-4 {
+  background: #fff4df;
+}
+.candidate-card.pastel-5 {
+  background: #efe8ff;
+}
+.candidate-card.pastel-6 {
+  background: #ffeedd;
+}
+
 .candidate-card.selected {
-  border-color: var(--primary);
+  border-color: #436ef0;
   transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(67, 110, 240, 0.26);
 }
 
 .vote-footer {
@@ -162,9 +216,14 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
-.counter {
-  font-size: 1.1rem;
+.counter,
+.selected-display {
+  font-size: 1.05rem;
   font-weight: 700;
+}
+
+.selected-display {
+  color: #3a4e75;
 }
 
 .dramatic-stage {
@@ -268,5 +327,9 @@ textarea:focus {
 
   .candidate-grid {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .candidate-field {
+    grid-template-columns: 1fr;
   }
 }

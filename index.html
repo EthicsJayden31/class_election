@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>클래스 투표 시스템</title>
+    <title>투표 프로그램</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,8 +16,8 @@
     <main class="app-shell">
       <section id="setup-screen" class="screen active">
         <header>
-          <h1>학급 회장 선거</h1>
-          <p>투표 항목을 입력하고 바로 선거를 시작하세요.</p>
+          <h1>투표 프로그램</h1>
+          <p>항목 수를 정하고 각 칸에 내용을 입력한 뒤 선거를 시작하세요.</p>
         </header>
 
         <div class="card">
@@ -26,13 +26,17 @@
             <input id="election-title" type="text" value="학급 회장 선거" />
           </label>
 
-          <label>
-            <span>투표 항목 (한 줄에 하나씩)</span>
-            <textarea id="candidate-input" rows="8" placeholder="예:&#10;1번 김민준&#10;2번 이서연&#10;3번 박지호">1번 김민준
-2번 이서연
-3번 박지호
-4번 최하윤</textarea>
-          </label>
+          <div class="candidate-count-row">
+            <span>투표 항목 수</span>
+            <div class="count-controls">
+              <button id="count-minus" type="button" class="btn btn-small">-</button>
+              <input id="candidate-count" type="number" min="2" max="12" value="4" />
+              <button id="count-plus" type="button" class="btn btn-small">+</button>
+              <button id="apply-count" type="button" class="btn">칸 만들기</button>
+            </div>
+          </div>
+
+          <div id="candidate-fields" class="candidate-fields"></div>
 
           <div class="button-row">
             <button id="start-vote" class="btn btn-primary">투표 시작</button>
@@ -43,15 +47,17 @@
       <section id="vote-screen" class="screen">
         <header>
           <h2 id="vote-title">학급 회장 선거</h2>
-          <p id="vote-subtitle">원하는 후보를 터치/클릭해 주세요.</p>
+          <p id="vote-subtitle">후보를 선택한 뒤 아래 확인 버튼으로 투표를 완료하세요.</p>
         </header>
 
         <div id="candidate-grid" class="candidate-grid"></div>
 
         <footer class="vote-footer">
           <div class="counter">총 투표 수: <strong id="vote-count">0</strong></div>
+          <div id="selected-display" class="selected-display">현재 선택: 없음</div>
           <div class="button-row">
             <button id="reset-current" class="btn">선택 초기화</button>
+            <button id="confirm-vote" class="btn btn-primary">선택 확인 및 1표 반영</button>
             <button id="finish-vote" class="btn btn-danger">투표 종료 및 결과 발표</button>
           </div>
         </footer>

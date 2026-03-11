@@ -6,6 +6,7 @@ const state = {
   totalVotes: 0,
 };
 
+const pastelClasses = ['pastel-1', 'pastel-2', 'pastel-3', 'pastel-4', 'pastel-5', 'pastel-6'];
 const $ = (id) => document.getElementById(id);
 
 const setupScreen = $('setup-screen');
@@ -14,43 +15,61 @@ const resultScreen = $('result-screen');
 const candidateGrid = $('candidate-grid');
 const rankingList = $('ranking-list');
 const dramaticStage = $('dramatic-stage');
+const candidateCountInput = $('candidate-count');
+const candidateFields = $('candidate-fields');
 
 function switchScreen(target) {
   [setupScreen, voteScreen, resultScreen].forEach((el) => el.classList.remove('active'));
   target.classList.add('active');
 }
 
-function parseCandidates(rawText) {
-  return rawText
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
+function makeCandidateFields() {
+  const count = Math.min(12, Math.max(2, Number(candidateCountInput.value) || 2));
+  candidateCountInput.value = count;
+  candidateFields.innerHTML = '';
+
+  for (let i = 1; i <= count; i += 1) {
+    const row = document.createElement('label');
+    row.className = 'candidate-field';
+
+    const caption = document.createElement('span');
+    caption.textContent = `항목 ${i}`;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `항목 ${i} 이름 입력`;
+    input.value = `${i}번 후보`;
+    input.dataset.index = String(i);
+
+    row.appendChild(caption);
+    row.appendChild(input);
+    candidateFields.appendChild(row);
+  }
+}
+
+function getCandidatesFromFields() {
+  const inputs = candidateFields.querySelectorAll('input');
+  return [...inputs].map((input) => input.value.trim()).filter(Boolean);
+}
+
+function updateSelectedDisplay() {
+  $('selected-display').textContent = `현재 선택: ${state.selectedCandidate || '없음'}`;
 }
 
 function renderCandidates() {
   candidateGrid.innerHTML = '';
 
-  state.candidates.forEach((name) => {
+  state.candidates.forEach((name, index) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'candidate-card';
+    button.className = `candidate-card ${pastelClasses[index % pastelClasses.length]}`;
     button.textContent = name;
 
     button.addEventListener('click', () => {
       state.selectedCandidate = name;
       [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
       button.classList.add('selected');
-
-      const ok = confirm(`"${name}" 에게 1표를 투표할까요?`);
-      if (!ok) return;
-
-      state.votes.set(name, (state.votes.get(name) || 0) + 1);
-      state.totalVotes += 1;
-      $('vote-count').textContent = state.totalVotes;
-      playVoteSound();
-
-      state.selectedCandidate = null;
-      [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
+      updateSelectedDisplay();
     });
 
     candidateGrid.appendChild(button);
@@ -74,10 +93,10 @@ function playVoteSound() {
 
 function startElection() {
   const title = $('election-title').value.trim() || '학급 회장 선거';
-  const candidates = parseCandidates($('candidate-input').value);
+  const candidates = getCandidatesFromFields();
 
   if (candidates.length < 2) {
-    alert('후보를 2명 이상 입력해 주세요.');
+    alert('항목을 2개 이상 입력해 주세요.');
     return;
   }
 
@@ -85,18 +104,35 @@ function startElection() {
   state.candidates = candidates;
   state.votes = new Map(candidates.map((name) => [name, 0]));
   state.totalVotes = 0;
-  $('vote-count').textContent = '0';
+  state.selectedCandidate = null;
 
+  $('vote-count').textContent = '0';
   $('vote-title').textContent = title;
   $('result-title').textContent = `${title} 결과 발표`;
+  updateSelectedDisplay();
 
   renderCandidates();
   switchScreen(voteScreen);
 }
 
+function confirmVote() {
+  if (!state.selectedCandidate) return;
+
+  const target = state.selectedCandidate;
+  state.votes.set(target, (state.votes.get(target) || 0) + 1);
+  state.totalVotes += 1;
+  $('vote-count').textContent = state.totalVotes;
+  playVoteSound();
+
+  state.selectedCandidate = null;
+  [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
+  updateSelectedDisplay();
+}
+
 function resetSelection() {
   state.selectedCandidate = null;
   [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
+  updateSelectedDisplay();
 }
 
 function sortedResults() {
@@ -156,17 +192,27 @@ function playCountdownSound(freq) {
 }
 
 async function finishElection() {
-  if (state.totalVotes === 0) {
-    const proceed = confirm('아직 투표가 없습니다. 결과 화면으로 이동할까요?');
-    if (!proceed) return;
-  }
-
   $('result-subtitle').textContent = `총 ${state.totalVotes}표 집계 완료`;
   switchScreen(resultScreen);
   await startDramaticReveal();
 }
 
+$('count-minus').addEventListener('click', () => {
+  candidateCountInput.value = Math.max(2, Number(candidateCountInput.value || 2) - 1);
+  makeCandidateFields();
+});
+
+$('count-plus').addEventListener('click', () => {
+  candidateCountInput.value = Math.min(12, Number(candidateCountInput.value || 2) + 1);
+  makeCandidateFields();
+});
+
+$('apply-count').addEventListener('click', makeCandidateFields);
 $('start-vote').addEventListener('click', startElection);
+$('confirm-vote').addEventListener('click', confirmVote);
 $('reset-current').addEventListener('click', resetSelection);
 $('finish-vote').addEventListener('click', finishElection);
 $('new-election').addEventListener('click', () => switchScreen(setupScreen));
+
+makeCandidateFields();
+updateSelectedDisplay();
