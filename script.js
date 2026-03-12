@@ -19,6 +19,7 @@ const rankingList = $('ranking-list');
 const dramaticStage = $('dramatic-stage');
 const candidateCountInput = $('candidate-count');
 const candidateFields = $('candidate-fields');
+const voteToastOverlay = $('vote-toast-overlay');
 const voteToast = $('vote-toast');
 
 let toastTimer = null;
@@ -61,12 +62,17 @@ function updateSelectedDisplay() {
   $('selected-display').textContent = `현재 선택: ${state.selectedCandidate || '없음'}`;
 }
 
+function hideVoteToast() {
+  voteToast.classList.remove('show');
+  voteToastOverlay.classList.remove('show');
+  clearTimeout(toastTimer);
+}
+
 function showVoteToast() {
+  voteToastOverlay.classList.add('show');
   voteToast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    voteToast.classList.remove('show');
-  }, 3000);
+  toastTimer = setTimeout(hideVoteToast, 3000);
 }
 
 function renderCandidates() {
@@ -243,6 +249,8 @@ $('confirm-vote').addEventListener('click', confirmVote);
 $('reset-current').addEventListener('click', resetSelection);
 $('finish-vote').addEventListener('click', finishElection);
 $('new-election').addEventListener('click', () => switchScreen(setupScreen));
+
+voteToastOverlay.addEventListener('pointerdown', hideVoteToast);
 
 makeCandidateFields();
 updateSelectedDisplay();

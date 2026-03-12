@@ -244,12 +244,27 @@ input:focus {
   color: #3a4e75;
 }
 
+.vote-toast-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 31, 0.86);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 28;
+}
+
+.vote-toast-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .vote-toast {
   position: fixed;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%) scale(0.92);
-  background: rgba(30, 42, 73, 0.58);
+  background: rgba(30, 42, 73, 0.9);
   color: #fff;
   padding: 2.8rem 4.2rem;
   border-radius: 28px;
