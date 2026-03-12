@@ -45,9 +45,12 @@
       </section>
 
       <section id="vote-screen" class="screen">
-        <header>
-          <h2 id="vote-title">학급 회장 선거</h2>
-          <p id="vote-subtitle">후보를 선택한 뒤 아래 확인 버튼으로 투표를 완료하세요.</p>
+        <header class="vote-header">
+          <div>
+            <h2 id="vote-title">학급 회장 선거</h2>
+            <p id="vote-subtitle">후보를 선택한 뒤 아래 확인 버튼으로 투표를 완료하세요.</p>
+          </div>
+          <button id="finish-vote" class="btn btn-danger top-finish">투표 종료 및 결과 발표</button>
         </header>
 
         <div id="candidate-grid" class="candidate-grid"></div>
@@ -58,7 +61,6 @@
           <div class="button-row">
             <button id="reset-current" class="btn">선택 초기화</button>
             <button id="confirm-vote" class="btn btn-primary">선택 확인 및 1표 반영</button>
-            <button id="finish-vote" class="btn btn-danger">투표 종료 및 결과 발표</button>
           </div>
         </footer>
       </section>
@@ -81,6 +83,8 @@
         </footer>
       </section>
     </main>
+
+    <div id="vote-toast" class="vote-toast">투표 완료</div>
 
     <script src="script.js"></script>
   </body>

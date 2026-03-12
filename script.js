@@ -7,6 +7,8 @@ const state = {
 };
 
 const pastelClasses = ['pastel-1', 'pastel-2', 'pastel-3', 'pastel-4', 'pastel-5', 'pastel-6'];
+const fanfareSourceUrl =
+  'https://store.soundeffectgenerator.org/instants/fanfare-sound-effect/5cffd6a0-item-fanfare.mp3';
 const $ = (id) => document.getElementById(id);
 
 const setupScreen = $('setup-screen');
@@ -17,6 +19,9 @@ const rankingList = $('ranking-list');
 const dramaticStage = $('dramatic-stage');
 const candidateCountInput = $('candidate-count');
 const candidateFields = $('candidate-fields');
+const voteToast = $('vote-toast');
+
+let toastTimer = null;
 
 function switchScreen(target) {
   [setupScreen, voteScreen, resultScreen].forEach((el) => el.classList.remove('active'));
@@ -56,6 +61,14 @@ function updateSelectedDisplay() {
   $('selected-display').textContent = `현재 선택: ${state.selectedCandidate || '없음'}`;
 }
 
+function showVoteToast() {
+  voteToast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    voteToast.classList.remove('show');
+  }, 3000);
+}
+
 function renderCandidates() {
   candidateGrid.innerHTML = '';
 
@@ -91,6 +104,14 @@ function playVoteSound() {
   osc.stop(ctx.currentTime + 0.1);
 }
 
+function playFanfareSound() {
+  const audio = new Audio(fanfareSourceUrl);
+  audio.volume = 0.8;
+  audio.play().catch(() => {
+    playCountdownSound(880);
+  });
+}
+
 function startElection() {
   const title = $('election-title').value.trim() || '학급 회장 선거';
   const candidates = getCandidatesFromFields();
@@ -123,6 +144,7 @@ function confirmVote() {
   state.totalVotes += 1;
   $('vote-count').textContent = state.totalVotes;
   playVoteSound();
+  showVoteToast();
 
   state.selectedCandidate = null;
   [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
@@ -141,16 +163,24 @@ function sortedResults() {
 
 function revealResults(results) {
   rankingList.innerHTML = '';
+  const maxVotes = Math.max(1, ...results.map(([, votes]) => votes));
+
   results.forEach(([name, votes], index) => {
     const item = document.createElement('article');
     item.className = 'ranking-item';
 
     const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-etc';
+    const graphPercent = Math.round((votes / maxVotes) * 100);
 
     item.innerHTML = `
       <div class="rank-badge ${rankClass}">${index + 1}</div>
-      <strong>${name}</strong>
-      <span>${votes}표</span>
+      <div class="result-main">
+        <strong>${name}</strong>
+        <div class="result-bar-wrap">
+          <div class="result-bar ${pastelClasses[index % pastelClasses.length]}" style="width: ${graphPercent}%"></div>
+        </div>
+      </div>
+      <span class="result-vote">${votes}표 (${graphPercent}%)</span>
     `;
 
     rankingList.appendChild(item);
@@ -169,8 +199,8 @@ async function startDramaticReveal() {
   }
 
   $('countdown').textContent = '결과 공개!';
-  playCountdownSound(840);
-  await new Promise((resolve) => setTimeout(resolve, 900));
+  playFanfareSound();
+  await new Promise((resolve) => setTimeout(resolve, 1200));
   dramaticStage.classList.add('hidden');
 
   revealResults(sortedResults());
