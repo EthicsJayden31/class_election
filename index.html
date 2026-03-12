@@ -17,12 +17,12 @@
       <section id="setup-screen" class="screen active">
         <header>
           <h1>투표 프로그램</h1>
-          <p>항목 수를 정하고 각 칸에 내용을 입력한 뒤 선거를 시작하세요.</p>
+          <p>항목 수를 정하고 각 칸에 내용을 입력한 뒤 투표를 시작하세요.</p>
         </header>
 
         <div class="card">
           <label>
-            <span>선거 제목</span>
+            <span>투표 제목</span>
             <input id="election-title" type="text" value="학급 회장 선거" />
           </label>
 
@@ -30,15 +30,14 @@
             <span>투표 항목 수</span>
             <div class="count-controls">
               <button id="count-minus" type="button" class="btn btn-small">-</button>
-              <input id="candidate-count" type="number" min="2" max="12" value="4" />
+              <input id="candidate-count" type="number" min="2" max="12" value="4" readonly />
               <button id="count-plus" type="button" class="btn btn-small">+</button>
-              <button id="apply-count" type="button" class="btn">칸 만들기</button>
             </div>
           </div>
 
           <div id="candidate-fields" class="candidate-fields"></div>
 
-          <div class="button-row">
+          <div class="button-row button-row-right">
             <button id="start-vote" class="btn btn-primary">투표 시작</button>
           </div>
         </div>
@@ -48,7 +47,7 @@
         <header class="vote-header">
           <div>
             <h2 id="vote-title">학급 회장 선거</h2>
-            <p id="vote-subtitle">후보를 선택한 뒤 아래 확인 버튼으로 투표를 완료하세요.</p>
+            <p id="vote-subtitle">하나를 선택한 뒤 오른쪽 아래 확인 버튼으로 투표를 완료하세요.</p>
           </div>
           <button id="finish-vote" class="btn btn-danger top-finish">투표 종료 및 결과 발표</button>
         </header>
@@ -58,9 +57,9 @@
         <footer class="vote-footer">
           <div class="counter">총 투표 수: <strong id="vote-count">0</strong></div>
           <div id="selected-display" class="selected-display">현재 선택: 없음</div>
-          <div class="button-row">
+          <div class="button-row button-row-right">
             <button id="reset-current" class="btn">선택 초기화</button>
-            <button id="confirm-vote" class="btn btn-primary">선택 확인 및 1표 반영</button>
+            <button id="confirm-vote" class="btn btn-primary" disabled>선택 확인 및 1표 반영</button>
           </div>
         </footer>
       </section>
@@ -78,14 +77,25 @@
 
         <div id="ranking-list" class="ranking-list"></div>
 
-        <footer class="button-row">
-          <button id="new-election" class="btn">새 선거 준비</button>
+        <footer class="button-row button-row-right">
+          <button id="new-election" class="btn">새 투표 준비</button>
+          <button id="revote" class="btn btn-primary">다시 투표하기</button>
         </footer>
       </section>
     </main>
 
     <div id="vote-toast-overlay" class="vote-toast-overlay" aria-live="polite">
       <div id="vote-toast" class="vote-toast">투표 완료</div>
+    </div>
+
+    <div id="finish-modal" class="finish-modal hidden" role="dialog" aria-modal="true" aria-labelledby="finish-modal-title">
+      <div class="finish-modal-card">
+        <h3 id="finish-modal-title">투표를 종료하시겠습니까?</h3>
+        <div class="button-row button-row-right">
+          <button id="finish-cancel" type="button" class="btn">취소</button>
+          <button id="finish-confirm" type="button" class="btn btn-danger">확인</button>
+        </div>
+      </div>
     </div>
 
     <script src="script.js"></script>

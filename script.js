@@ -21,12 +21,18 @@ const candidateCountInput = $('candidate-count');
 const candidateFields = $('candidate-fields');
 const voteToastOverlay = $('vote-toast-overlay');
 const voteToast = $('vote-toast');
+const finishModal = $('finish-modal');
+const confirmVoteBtn = $('confirm-vote');
 
 let toastTimer = null;
 
 function switchScreen(target) {
   [setupScreen, voteScreen, resultScreen].forEach((el) => el.classList.remove('active'));
   target.classList.add('active');
+}
+
+function updateConfirmButtonState() {
+  confirmVoteBtn.disabled = !state.selectedCandidate;
 }
 
 function makeCandidateFields() {
@@ -45,7 +51,6 @@ function makeCandidateFields() {
     input.type = 'text';
     input.placeholder = `항목 ${i} 이름 입력`;
     input.value = `${i}번 후보`;
-    input.dataset.index = String(i);
 
     row.appendChild(caption);
     row.appendChild(input);
@@ -89,6 +94,7 @@ function renderCandidates() {
       [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
       button.classList.add('selected');
       updateSelectedDisplay();
+      updateConfirmButtonState();
     });
 
     candidateGrid.appendChild(button);
@@ -137,6 +143,7 @@ function startElection() {
   $('vote-title').textContent = title;
   $('result-title').textContent = `${title} 결과 발표`;
   updateSelectedDisplay();
+  updateConfirmButtonState();
 
   renderCandidates();
   switchScreen(voteScreen);
@@ -155,12 +162,14 @@ function confirmVote() {
   state.selectedCandidate = null;
   [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
   updateSelectedDisplay();
+  updateConfirmButtonState();
 }
 
 function resetSelection() {
   state.selectedCandidate = null;
   [...candidateGrid.children].forEach((child) => child.classList.remove('selected'));
   updateSelectedDisplay();
+  updateConfirmButtonState();
 }
 
 function sortedResults() {
@@ -233,6 +242,25 @@ async function finishElection() {
   await startDramaticReveal();
 }
 
+function openFinishModal() {
+  finishModal.classList.remove('hidden');
+}
+
+function closeFinishModal() {
+  finishModal.classList.add('hidden');
+}
+
+function restartVoteWithSameItems() {
+  state.votes = new Map(state.candidates.map((name) => [name, 0]));
+  state.totalVotes = 0;
+  state.selectedCandidate = null;
+  $('vote-count').textContent = '0';
+  updateSelectedDisplay();
+  updateConfirmButtonState();
+  renderCandidates();
+  switchScreen(voteScreen);
+}
+
 $('count-minus').addEventListener('click', () => {
   candidateCountInput.value = Math.max(2, Number(candidateCountInput.value || 2) - 1);
   makeCandidateFields();
@@ -243,14 +271,22 @@ $('count-plus').addEventListener('click', () => {
   makeCandidateFields();
 });
 
-$('apply-count').addEventListener('click', makeCandidateFields);
 $('start-vote').addEventListener('click', startElection);
 $('confirm-vote').addEventListener('click', confirmVote);
 $('reset-current').addEventListener('click', resetSelection);
-$('finish-vote').addEventListener('click', finishElection);
+$('finish-vote').addEventListener('click', openFinishModal);
+$('finish-cancel').addEventListener('click', closeFinishModal);
+$('finish-confirm').addEventListener('click', async () => {
+  closeFinishModal();
+  await finishElection();
+});
 $('new-election').addEventListener('click', () => switchScreen(setupScreen));
-
+$('revote').addEventListener('click', restartVoteWithSameItems);
 voteToastOverlay.addEventListener('pointerdown', hideVoteToast);
+finishModal.addEventListener('pointerdown', (event) => {
+  if (event.target === finishModal) closeFinishModal();
+});
 
 makeCandidateFields();
 updateSelectedDisplay();
+updateConfirmButtonState();
