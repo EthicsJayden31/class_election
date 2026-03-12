@@ -25,6 +25,33 @@ const finishModal = $('finish-modal');
 const confirmVoteBtn = $('confirm-vote');
 
 let toastTimer = null;
+let audioCtx = null;
+let fanfareBufferPromise = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    audioCtx = new AudioCtx();
+  }
+  return audioCtx;
+}
+
+function unlockAudio() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+
+  if (!fanfareBufferPromise) {
+    fanfareBufferPromise = fetch(fanfareSourceUrl)
+      .then((res) => res.arrayBuffer())
+      .then((buffer) => ctx.decodeAudioData(buffer.slice(0)))
+      .catch(() => null);
+  }
+}
 
 function switchScreen(target) {
   [setupScreen, voteScreen, resultScreen].forEach((el) => el.classList.remove('active'));
@@ -77,7 +104,7 @@ function showVoteToast() {
   voteToastOverlay.classList.add('show');
   voteToast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(hideVoteToast, 3000);
+  toastTimer = setTimeout(hideVoteToast, 1000);
 }
 
 function renderCandidates() {
@@ -101,27 +128,53 @@ function renderCandidates() {
   });
 }
 
-function playVoteSound() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+function playTone(type, freq, gainValue, duration) {
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state !== 'running') return;
+
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
-  osc.type = 'triangle';
-  osc.frequency.value = 523.25;
-  gain.gain.value = 0.05;
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.value = gainValue;
 
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start();
-  osc.stop(ctx.currentTime + 0.1);
+  osc.stop(ctx.currentTime + duration);
 }
 
-function playFanfareSound() {
-  const audio = new Audio(fanfareSourceUrl);
-  audio.volume = 0.8;
-  audio.play().catch(() => {
+function playVoteSound() {
+  playTone('triangle', 523.25, 0.05, 0.1);
+}
+
+async function playFanfareSound() {
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state !== 'running') {
     playCountdownSound(880);
-  });
+    return;
+  }
+
+  try {
+    const buffer = fanfareBufferPromise
+      ? await Promise.race([fanfareBufferPromise, new Promise((resolve) => setTimeout(() => resolve(null), 600))])
+      : null;
+    if (!buffer) {
+      playCountdownSound(880);
+      return;
+    }
+
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    source.buffer = buffer;
+    gain.gain.value = 0.9;
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    source.start();
+  } catch {
+    playCountdownSound(880);
+  }
 }
 
 function startElection() {
@@ -151,6 +204,8 @@ function startElection() {
 
 function confirmVote() {
   if (!state.selectedCandidate) return;
+
+  unlockAudio();
 
   const target = state.selectedCandidate;
   state.votes.set(target, (state.votes.get(target) || 0) + 1);
@@ -214,7 +269,7 @@ async function startDramaticReveal() {
   }
 
   $('countdown').textContent = '결과 공개!';
-  playFanfareSound();
+  await playFanfareSound();
   await new Promise((resolve) => setTimeout(resolve, 1200));
   dramaticStage.classList.add('hidden');
 
@@ -222,18 +277,7 @@ async function startDramaticReveal() {
 }
 
 function playCountdownSound(freq) {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-
-  osc.type = 'sawtooth';
-  osc.frequency.value = freq;
-  gain.gain.value = 0.06;
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start();
-  osc.stop(ctx.currentTime + 0.15);
+  playTone('sawtooth', freq, 0.06, 0.15);
 }
 
 async function finishElection() {
@@ -277,15 +321,18 @@ $('reset-current').addEventListener('click', resetSelection);
 $('finish-vote').addEventListener('click', openFinishModal);
 $('finish-cancel').addEventListener('click', closeFinishModal);
 $('finish-confirm').addEventListener('click', async () => {
+  unlockAudio();
   closeFinishModal();
   await finishElection();
 });
 $('new-election').addEventListener('click', () => switchScreen(setupScreen));
 $('revote').addEventListener('click', restartVoteWithSameItems);
-voteToastOverlay.addEventListener('pointerdown', hideVoteToast);
 finishModal.addEventListener('pointerdown', (event) => {
   if (event.target === finishModal) closeFinishModal();
 });
+
+window.addEventListener('pointerdown', unlockAudio, { once: true });
+window.addEventListener('keydown', unlockAudio, { once: true });
 
 makeCandidateFields();
 updateSelectedDisplay();
