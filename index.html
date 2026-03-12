@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>투표 프로그램</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="setup-screen" class="screen active">
+        <header>
+          <h1>투표 프로그램</h1>
+          <p>항목 수를 정하고 각 칸에 내용을 입력한 뒤 선거를 시작하세요.</p>
+        </header>
+
+        <div class="card">
+          <label>
+            <span>선거 제목</span>
+            <input id="election-title" type="text" value="학급 회장 선거" />
+          </label>
+
+          <div class="candidate-count-row">
+            <span>투표 항목 수</span>
+            <div class="count-controls">
+              <button id="count-minus" type="button" class="btn btn-small">-</button>
+              <input id="candidate-count" type="number" min="2" max="12" value="4" />
+              <button id="count-plus" type="button" class="btn btn-small">+</button>
+              <button id="apply-count" type="button" class="btn">칸 만들기</button>
+            </div>
+          </div>
+
+          <div id="candidate-fields" class="candidate-fields"></div>
+
+          <div class="button-row">
+            <button id="start-vote" class="btn btn-primary">투표 시작</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="vote-screen" class="screen">
+        <header class="vote-header">
+          <div>
+            <h2 id="vote-title">학급 회장 선거</h2>
+            <p id="vote-subtitle">후보를 선택한 뒤 아래 확인 버튼으로 투표를 완료하세요.</p>
+          </div>
+          <button id="finish-vote" class="btn btn-danger top-finish">투표 종료 및 결과 발표</button>
+        </header>
+
+        <div id="candidate-grid" class="candidate-grid"></div>
+
+        <footer class="vote-footer">
+          <div class="counter">총 투표 수: <strong id="vote-count">0</strong></div>
+          <div id="selected-display" class="selected-display">현재 선택: 없음</div>
+          <div class="button-row">
+            <button id="reset-current" class="btn">선택 초기화</button>
+            <button id="confirm-vote" class="btn btn-primary">선택 확인 및 1표 반영</button>
+          </div>
+        </footer>
+      </section>
+
+      <section id="result-screen" class="screen">
+        <header>
+          <h2 id="result-title">결과 발표</h2>
+          <p id="result-subtitle">두근두근! 결과를 공개합니다.</p>
+        </header>
+
+        <div id="dramatic-stage" class="dramatic-stage hidden">
+          <div class="lights"></div>
+          <div class="countdown" id="countdown">3</div>
+        </div>
+
+        <div id="ranking-list" class="ranking-list"></div>
+
+        <footer class="button-row">
+          <button id="new-election" class="btn">새 선거 준비</button>
+        </footer>
+      </section>
+    </main>
+
+    <div id="vote-toast" class="vote-toast">투표 완료</div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
